@@ -11,3 +11,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 def home():
     # Restituisce direttamente il file HTML
     return FileResponse('static/index.html')
+
+from datetime import datetime
+
+@app.get("/ora")
+def dammi_ora():
+    # Restituiamo un dizionario (JSON)
+    return {"orario": datetime.now().strftime("%H:%M:%S")}
