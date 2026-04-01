@@ -1,11 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
+    <meta charset="UTF-8">
     <link rel="stylesheet" href="/static/style.css">
+    <title>FastAPI - Saluto</title>
 </head>
 <body>
-    <h1>Server di Terza</h1>
-    <p>Questa pagina è un file HTML esterno!</p>
-    <p id="orario">Caricamento...</p>
+    <h1>Esercitazione Web Server</h1>
+    
+    <div class="card">
+        <p id="orario">Clicca per l'ora</p>
+        <button id="btn-ora">Controlla Ora</button>
+    </div>
+
+    <hr>
+
+    <div class="card">
+        <h3>Saluto Personalizzato</h3>
+        <input type="text" id="input-nome" placeholder="Scrivi il tuo nome...">
+        <button id="btn-saluto">Invia al Server</button>
+        <h2 id="risposta-saluto"></h2>
+    </div>
+
+    <script src="/static/script.js"></script>
 </body>
 </html>
