@@ -2,24 +2,48 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/style.css">
-    <title>FastAPI - Saluto</title>
+    <title>Dashboard Vedovelle Milano</title>
 </head>
 <body>
-    <h1>Esercitazione Web Server</h1>
-    
-    <div class="card">
-        <p id="orario">Clicca per l'ora</p>
-        <button id="btn-ora">Controlla Ora</button>
-    </div>
+    <div class="container">
+        <h1>Gestione Fontanelle Milano</h1>
+        <p>Esercitazione Classe Terza - FastAPI & Pandas</p>
 
-    <hr>
+        <div class="section">
+            <h3>1. Controllo Stato Server</h3>
+            <p id="orario">L'ora apparirà qui</p>
+            <button id="btn-ora">Richiedi Ora</button>
+        </div>
 
-    <div class="card">
-        <h3>Saluto Personalizzato</h3>
-        <input type="text" id="input-nome" placeholder="Scrivi il tuo nome...">
-        <button id="btn-saluto">Invia al Server</button>
-        <h2 id="risposta-saluto"></h2>
+        <div class="section">
+            <h3>2. Test Parametri (Saluto)</h3>
+            <input type="text" id="input-nome" placeholder="Scrivi il tuo nome...">
+            <button id="btn-saluto">Saluta</button>
+            <h2 id="risposta-saluto"></h2>
+        </div>
+
+        <div class="section">
+            <h3>3. Ricerca Vedovelle per Quartiere</h3>
+            <p><small>Inserisci il NIL (es: ADRIANO, LORENTEGGIO, DUOMO)</small></p>
+            <input type="text" id="input-nil" placeholder="Nome Quartiere (NIL)">
+            <button id="btn-cerca">Cerca Fontanelle</button>
+            
+            <p id="info-risultati" style="margin-top: 15px; font-weight: bold;"></p>
+            
+            <table id="tabella-fontanelle" border="1" style="display:none; width:100%; margin-top:10px;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>NIL (Quartiere)</th>
+                        <th>CAP</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabella">
+                    </tbody>
+            </table>
+        </div>
     </div>
 
     <script src="/static/script.js"></script>
