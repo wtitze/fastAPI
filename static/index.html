@@ -3,49 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Milano - Mappa Vedovelle</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="/static/style.css">
-    <title>Dashboard Vedovelle Milano</title>
+    
+    <style>
+        /* Stile specifico per il contenitore della mappa */
+        #map { 
+            height: 450px; 
+            width: 100%; 
+            border-radius: 8px; 
+            margin: 20px 0; 
+            border: 2px solid #333;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Gestione Fontanelle Milano</h1>
-        <p>Esercitazione Classe Terza - FastAPI & Pandas</p>
+        <h1>Dashboard Interattiva Milano</h1>
 
         <div class="section">
-            <h3>1. Controllo Stato Server</h3>
-            <p id="orario">L'ora apparirà qui</p>
-            <button id="btn-ora">Richiedi Ora</button>
+            <div class="control-group">
+                <button id="btn-ora">Verifica Ora Server</button>
+                <span id="orario">--:--:--</span>
+            </div>
+            
+            <div class="control-group" style="margin-top: 15px;">
+                <input type="text" id="input-nome" placeholder="Inserisci il tuo nome">
+                <button id="btn-saluto">Invia Saluto</button>
+                <p id="risposta-saluto"></p>
+            </div>
         </div>
 
         <div class="section">
-            <h3>2. Test Parametri (Saluto)</h3>
-            <input type="text" id="input-nome" placeholder="Scrivi il tuo nome...">
-            <button id="btn-saluto">Saluta</button>
-            <h2 id="risposta-saluto"></h2>
-        </div>
+            <h3>Cerca Fontanelle nel Quartiere (NIL)</h3>
+            <p><small>Esempi: ADRIANO, DUOMO, LORENTEGGIO, AFFORI</small></p>
+            
+            <div class="control-group">
+                <input type="text" id="input-nil" placeholder="Nome quartiere...">
+                <button id="btn-cerca">Cerca e Localizza</button>
+            </div>
 
-        <div class="section">
-            <h3>3. Ricerca Vedovelle per Quartiere</h3>
-            <p><small>Inserisci il NIL (es: ADRIANO, LORENTEGGIO, DUOMO)</small></p>
-            <input type="text" id="input-nil" placeholder="Nome Quartiere (NIL)">
-            <button id="btn-cerca">Cerca Fontanelle</button>
-            
-            <p id="info-risultati" style="margin-top: 15px; font-weight: bold;"></p>
-            
-            <table id="tabella-fontanelle" border="1" style="display:none; width:100%; margin-top:10px;">
+            <div id="map"></div>
+
+            <p id="info-risultati"></p>
+            <table id="tabella-fontanelle" border="1" style="display:none; width:100%;">
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>NIL (Quartiere)</th>
-                        <th>CAP</th>
+                        <th>NIL</th>
+                        <th>Municipio</th>
                     </tr>
                 </thead>
-                <tbody id="corpo-tabella">
-                    </tbody>
+                <tbody id="corpo-tabella"></tbody>
             </table>
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/static/script.js"></script>
 </body>
 </html>

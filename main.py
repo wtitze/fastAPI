@@ -7,55 +7,64 @@ import os
 
 app = FastAPI()
 
-# Montiamo la cartella static (assicurati che esista!)
+# 1. Configurazione Static Files
+# Serve per far leggere al browser i file dentro la cartella /static (CSS, JS, immagini)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# --- CARICAMENTO DATI CON PANDAS ---
-# Il tuo file usa il punto e virgola ';' come separatore
+# 2. Caricamento Dataset con Pandas
+# Carichiamo il CSV una sola volta all'avvio per rendere le ricerche istantanee
 FILE_CSV = "vedovelle_20260315-233003_final.csv"
 
 if os.path.exists(FILE_CSV):
-    # Leggiamo il CSV specificando il separatore corretto
+    # Usiamo il separatore ';' come visto nel tuo file
     df_fontanelle = pd.read_csv(FILE_CSV, sep=';', encoding='utf-8')
-    # Puliamo i nomi dei NIL da eventuali spazi bianchi extra
+    # Puliamo la colonna NIL da spazi bianchi prima o dopo il testo
     df_fontanelle['NIL'] = df_fontanelle['NIL'].str.strip()
-    print(f"Dataset caricato con successo! Righe: {len(df_fontanelle)}")
+    print(f"Dataset caricato correttamente. Righe: {len(df_fontanelle)}")
 else:
-    print(f"ERRORE: File {FILE_CSV} non trovato!")
+    print(f"ERRORE: Il file {FILE_CSV} non è stato trovato nella cartella del progetto!")
     df_fontanelle = pd.DataFrame()
 
+# --- ENDPOINT API ---
+
+# Rotta per servire la pagina principale
 @app.get("/")
 def home():
     return FileResponse('static/index.html')
 
+# Endpoint 1: Ora del server
 @app.get("/ora")
 def dammi_ora():
     return {"orario": datetime.now().strftime("%H:%M:%S")}
 
+# Endpoint 2: Saluto con parametro Query
 @app.get("/saluta")
 def saluta_utente(nome: str):
-    return {"messaggio": f"Ciao {nome}!"}
+    return {"messaggio": f"Ciao {nome}, benvenuto nella dashboard di Milano!"}
 
+# Endpoint 3: Ricerca Fontanelle per NIL (Quartiere)
+# Questo endpoint serve sia alla tabella che alla mappa nel frontend
 @app.get("/cerca_fontanelle")
 def cerca_fontanelle(quartiere: str):
     if df_fontanelle.empty:
-        return {"messaggio": "Database non disponibile", "fontanelle": []}
+        return {"messaggio": "Database non caricato", "fontanelle": []}
 
-    # Trasformiamo l'input dell'utente in maiuscolo (come nel CSV)
+    # Convertiamo l'input dell'utente in maiuscolo per confrontarlo col CSV
     quartiere_cercato = quartiere.strip().upper()
     
-    # Filtro Pandas: cerchiamo corrispondenze esatte o parziali
-    # Usiamo str.contains se vogliamo essere più flessibili, 
-    # o == per la corrispondenza esatta richiesta
-    risultato = df_fontanelle[df_fontanelle['NIL'] == quartiere_cercato]
+    # Filtriamo il DataFrame
+    filtro = df_fontanelle[df_fontanelle['NIL'] == quartiere_cercato]
     
-    if risultato.empty:
+    if filtro.empty:
         return {
             "messaggio": f"Nessuna fontanella trovata per il quartiere: {quartiere_cercato}",
             "fontanelle": []
         }
     
+    # Restituiamo i dati (incluse le colonne LAT_Y_4326 e LONG_X_4326 per la mappa)
     return {
-        "messaggio": f"Trovate {len(risultato)} fontanelle a {quartiere_cercato}",
-        "fontanelle": risultato.to_dict(orient="records")
+        "messaggio": f"Trovate {len(filtro)} fontanelle a {quartiere_cercato}",
+        "fontanelle": filtro.to_dict(orient="records")
     }
+
+# Per avviare: uvicorn main:app --reload

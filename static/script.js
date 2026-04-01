@@ -1,70 +1,80 @@
-// 1. Funzione per l'ora
-async function aggiornaOra() {
-    console.log("Richiesta ora inviata...");
-    try {
-        const res = await fetch('/ora');
-        const json = await res.json();
-        document.getElementById('orario').innerText = "Ora del server: " + json.orario;
-    } catch (e) {
-        console.error("Errore ora:", e);
-    }
+// --- 1. INIZIALIZZAZIONE MAPPA ---
+// Centriamo la mappa su Milano (Coordinate 45.4642, 9.1900)
+var map = L.map('map').setView([45.4642, 9.1900], 12);
+
+// Carichiamo lo sfondo della mappa da OpenStreetMap
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// Gruppo di marker: ci permette di cancellare i vecchi segnalini a ogni nuova ricerca
+var markersGroup = L.layerGroup().addTo(map);
+
+// --- 2. FUNZIONI ORA E SALUTO ---
+
+async function chiediOra() {
+    const res = await fetch('/ora');
+    const dati = await res.json();
+    document.getElementById('orario').innerText = dati.orario;
 }
 
-// 2. Funzione per il saluto
-async function inviaSaluto() {
+async function chiediSaluto() {
     const nome = document.getElementById('input-nome').value;
-    if (!nome) return alert("Inserisci un nome!");
-    
-    try {
-        const res = await fetch(`/saluta?nome=${nome}`);
-        const json = await res.json();
-        document.getElementById('risposta-saluto').innerText = json.messaggio;
-    } catch (e) {
-        console.error("Errore saluto:", e);
-    }
+    if (!nome) return alert("Scrivi un nome!");
+    const res = await fetch(`/saluta?nome=${nome}`);
+    const dati = await res.json();
+    document.getElementById('risposta-saluto').innerText = dati.messaggio;
 }
 
-// 3. Funzione per le fontanelle (CSV)
+// --- 3. FUNZIONE RICERCA FONTANELLE (TABELLA + MAPPA) ---
+
 async function cercaFontanelle() {
-    const quartiere = document.getElementById('input-nil').value;
+    const quartiere = document.getElementById('input-nil').value.trim().toUpperCase();
     if (!quartiere) return alert("Inserisci un quartiere!");
 
-    console.log("Cerco quartiere:", quartiere);
+    const res = await fetch(`/cerca_fontanelle?quartiere=${quartiere}`);
+    const dati = await res.json();
 
-    try {
-        const res = await fetch(`/cerca_fontanelle?quartiere=${quartiere}`);
-        const dati = await res.json();
-        
-        const info = document.getElementById('info-risultati');
-        const tabella = document.getElementById('tabella-fontanelle');
-        const corpo = document.getElementById('corpo-tabella');
+    const info = document.getElementById('info-risultati');
+    const corpoTabella = document.getElementById('corpo-tabella');
+    const tabella = document.getElementById('tabella-fontanelle');
 
-        info.innerText = dati.messaggio;
-        corpo.innerHTML = "";
+    // Pulizia precedente
+    info.innerText = dati.messaggio;
+    corpoTabella.innerHTML = "";
+    markersGroup.clearLayers();
 
-        if (dati.fontanelle && dati.fontanelle.length > 0) {
-            tabella.style.display = "table";
-            dati.fontanelle.forEach(f => {
-                // ATTENZIONE: Usiamo i nomi delle colonne del CSV (es: objectID, NIL, CAP)
-                const riga = `<tr>
-                    <td>${f.objectID}</td>
-                    <td>${f.NIL}</td>
-                    <td>${f.CAP}</td>
-                </tr>`;
-                corpo.innerHTML += riga;
-            });
-        } else {
-            tabella.style.display = "none";
-        }
-    } catch (e) {
-        console.error("Errore ricerca fontanelle:", e);
+    if (dati.fontanelle.length > 0) {
+        tabella.style.display = "table";
+
+        dati.fontanelle.forEach(f => {
+            // 1. Aggiungi riga alla tabella
+            const riga = `<tr>
+                <td>${f.objectID}</td>
+                <td>${f.NIL}</td>
+                <td>${f.MUNICIPIO}</td>
+            </tr>`;
+            corpoTabella.innerHTML += riga;
+
+            // 2. Aggiungi marker alla mappa
+            // Usiamo i nomi delle colonne del CSV: LAT_Y_4326 e LONG_X_4326
+            if (f.LAT_Y_4326 && f.LONG_X_4326) {
+                L.marker([f.LAT_Y_4326, f.LONG_X_4326])
+                 .addTo(markersGroup)
+                 .bindPopup(`<b>Fontanella ID: ${f.objectID}</b><br>Quartiere: ${f.NIL}`);
+            }
+        });
+
+        // Spostiamo la vista della mappa sulla prima fontanella trovata
+        const prima = dati.fontanelle[0];
+        map.setView([prima.LAT_Y_4326, prima.LONG_X_4326], 14);
+
+    } else {
+        tabella.style.display = "none";
     }
 }
 
-// 4. Collegamento dei bottoni (Listener)
-// Usiamo i nomi esatti degli ID definiti nell'HTML
-console.log("Script JS caricato. Collega i bottoni...");
-
-document.getElementById('btn-ora').addEventListener('click', aggiornaOra);
-document.getElementById('btn-saluto').addEventListener('click', inviaSaluto);
+// --- 4. EVENT LISTENERS ---
+document.getElementById('btn-ora').addEventListener('click', chiediOra);
+document.getElementById('btn-saluto').addEventListener('click', chiediSaluto);
 document.getElementById('btn-cerca').addEventListener('click', cercaFontanelle);
